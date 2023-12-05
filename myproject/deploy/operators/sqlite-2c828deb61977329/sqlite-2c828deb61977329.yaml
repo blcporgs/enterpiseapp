@@ -1,0 +1,9 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: "sub-to-sqlite"
+spec:
+  channel: "stable"
+  name: "sqlite"
+  source: "operatorhubio-catalog"
+  installPlanApproval: "Manual"

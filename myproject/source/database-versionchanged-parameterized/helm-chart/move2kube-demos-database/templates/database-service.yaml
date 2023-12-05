@@ -1,0 +1,23 @@
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+    annotations:
+        move2kube.konveyor.io/service.expose: "false"
+    creationTimestamp: null
+    labels:
+        move2kube.konveyor.io/service: database
+    name: database
+spec:
+    ports:
+        - name: database-port
+          port: 5432
+          targetPort: 5432
+    selector:
+        move2kube.konveyor.io/service: database
+    type: ClusterIP
+status:
+    loadBalancer: {}
+
+...

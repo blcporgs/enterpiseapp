@@ -1,0 +1,55 @@
+version: "3.5"
+services:
+  customers:
+    container_name: customers
+    image: index.docker.io/korificf/customers:latest
+    ports:
+      - target: 8080
+        published: 8080
+  frontend:
+    container_name: frontend
+    environment:
+      BLUEMIX_REGION: ""
+      VCAP_APPLICATION: ""
+      VCAP_SERVICES: ""
+    image: index.docker.io/korificf/frontend:latest
+    ports:
+      - target: 8080
+        published: 8081
+  gateway:
+    container_name: gateway
+    environment:
+      BLUEMIX_REGION: /vcap/vcap-properties.yaml
+      JBP_CONFIG_SPRING_AUTO_RECONFIGURATION: /vcap/vcap-properties.yaml
+      SPRING_CONFIG_IMPORT: /vcap/vcap-properties.yaml
+      SPRING_PROFILES_ACTIVE: /vcap/vcap-properties.yaml
+      VCAP_APPLICATION: /vcap/vcap-properties.yaml
+      VCAP_SERVICES: /vcap/vcap-properties.yaml
+    image: index.docker.io/korificf/gateway:latest
+    ports:
+      - target: 8080
+        published: 8084
+  inventory:
+    container_name: inventory
+    image: index.docker.io/korificf/inventory:latest
+    ports:
+      - target: 8080
+        published: 8083
+  orders:
+    container_name: orders
+    environment:
+      BLUEMIX_REGION: /vcap/vcap-properties.yaml
+      CLOUD_OBJECT_STORAGE_0H_APIKEY: /vcap/vcap-properties.yaml
+      CLOUD_OBJECT_STORAGE_0H_ENDPOINTS: /vcap/vcap-properties.yaml
+      CLOUD_OBJECT_STORAGE_0H_IAM_APIKEY_DESCRIPTION: /vcap/vcap-properties.yaml
+      CLOUD_OBJECT_STORAGE_0H_IAM_APIKEY_NAME: /vcap/vcap-properties.yaml
+      CLOUD_OBJECT_STORAGE_0H_IAM_ROLE_CRN: /vcap/vcap-properties.yaml
+      CLOUD_OBJECT_STORAGE_0H_IAM_SERVICEID_CRN: /vcap/vcap-properties.yaml
+      CLOUD_OBJECT_STORAGE_0H_RESOURCE_INSTANCE_ID: /vcap/vcap-properties.yaml
+      SPRING_CONFIG_IMPORT: /vcap/vcap-properties.yaml
+      VCAP_APPLICATION: /vcap/vcap-properties.yaml
+      VCAP_SERVICES: /vcap/vcap-properties.yaml
+    image: index.docker.io/korificf/orders:latest
+    ports:
+      - target: 8080
+        published: 8082

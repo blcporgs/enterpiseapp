@@ -1,0 +1,4 @@
+resources:
+  - database-deployment.yaml
+  - database-secret-secret.yaml
+  - database-service.yaml

@@ -1,0 +1,117 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+  name: move2kube-demos-database-template
+  generatename: ""
+  namespace: ""
+  selflink: ""
+  uid: ""
+  resourceversion: ""
+  generation: 0
+  creationtimestamp: "0001-01-01T00:00:00Z"
+  deletiontimestamp: null
+  deletiongraceperiodseconds: null
+  labels: {}
+  annotations: {}
+  ownerreferences: []
+  finalizers: []
+  clustername: ""
+  managedfields: []
+objects:
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      annotations:
+        move2kube.konveyor.io/service.expose: "false"
+      creationTimestamp: null
+      labels:
+        move2kube.konveyor.io/service: database
+      name: database
+    spec:
+      ports:
+        - name: database-port
+          port: 5432
+          targetPort: 5432
+      selector:
+        move2kube.konveyor.io/service: database
+      type: ClusterIP
+    status:
+      loadBalancer: {}
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      annotations:
+        move2kube.konveyor.io/service.expose: "false"
+      creationTimestamp: null
+      labels:
+        move2kube.konveyor.io/service: database
+      name: database
+    spec:
+      replicas: ${{COMMON_REPLICAS}}
+      selector:
+        matchLabels:
+          move2kube.konveyor.io/service: database
+      strategy: {}
+      template:
+        metadata:
+          annotations:
+            move2kube.konveyor.io/service.expose: "false"
+          creationTimestamp: null
+          labels:
+            move2kube.konveyor.io/service: database
+          name: database
+        spec:
+          containers:
+            - env:
+                - name: POSTGRES_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      key: password
+                      name: database-secret
+                - name: PGDATA
+                  value: /var/lib/postgresql/data/pgdata
+              image: postgres:14.5
+              imagePullPolicy: Always
+              name: database
+              ports:
+                - containerPort: 5432
+                  protocol: TCP
+              resources: {}
+              volumeMounts:
+                - mountPath: /docker-entrypoint-initdb.d
+                  name: secret-volume
+                  readOnly: true
+          restartPolicy: Always
+          securityContext: {}
+          volumes:
+            - name: secret-volume
+              secret:
+                secretName: database-secret
+    status: {}
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      creationTimestamp: null
+      name: database-secret
+    stringData:
+      init-user-db.sh: |
+        #!/bin/bash
+        set -e
+        psql -v ON_ERROR_STOP=1 --username postgres --dbname "$POSTGRES_DB" <<-EOSQL
+            CREATE USER customers WITH PASSWORD 'customers';
+            CREATE DATABASE customers;
+            GRANT ALL PRIVILEGES ON DATABASE customers TO customers;
+
+            CREATE USER orders WITH PASSWORD 'orders';
+            CREATE DATABASE orders;
+            GRANT ALL PRIVILEGES ON DATABASE orders TO orders;
+
+            CREATE USER products WITH PASSWORD 'products';
+            CREATE DATABASE products;
+            GRANT ALL PRIVILEGES ON DATABASE products TO products;
+        EOSQL
+      password: mypass1234
+    type: Opaque
+parameters:
+  - name: COMMON_REPLICAS
+    value: "1"
